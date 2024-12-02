@@ -6,6 +6,7 @@ class AuthEvent(Enum):
     SIGN_IN_FAILED = "sign_in_failed"
     SIGN_UP_SUCCESS = "sign_up_success"
     SIGN_UP_FAILED = "sign_up_failed"
+    TOKEN_REFRESH_FAILED = "token_refresh_failed"
 
 class Observer(ABC):
     @abstractmethod
