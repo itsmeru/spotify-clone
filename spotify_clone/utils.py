@@ -1,14 +1,14 @@
-import re
-from fastapi.responses import JSONResponse
+from datetime import datetime, timedelta
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
+import jwt
 
-from spotify_clone.auth.events import AuthEvent, AuthSubject
+from spotify_clone.settings import  ALGO, JWT_SECRET
+from spotify_clone.auth.events import AuthEvent, AuthSubject, AuthError
 
 
 class Utils(AuthSubject):
     def __init__(self):
-        super().__init__() 
         self.ph = PasswordHasher()
 
     def hash_password(self, pwd):
@@ -20,7 +20,25 @@ class Utils(AuthSubject):
         except VerifyMismatchError:
             return False
     
-    def create_error_response(self,  status_code: int, error_code: int, content: str, event: AuthEvent):
-        content = {"error_code": error_code, "status_msg": content}
-        self.notify(event, content)
-        return JSONResponse(status_code=status_code, content=content)
+    def jwt_encode(self, payload):
+        return jwt.encode(payload, JWT_SECRET, algorithm=ALGO)
+    
+    def create_token_payload(self, user: dict, token_type: str) -> dict:
+        payload = {
+            "id": user["id"],
+            "type": token_type,
+            "iat": datetime.utcnow(),
+        }
+        
+        if token_type == "access":
+            payload.update({
+                "name": user["username"],
+                "email": user["email"],
+                "exp": datetime.utcnow() + timedelta(minutes=15)
+            })
+        else:  # refresh token
+            payload.update({
+                "exp": datetime.utcnow() + timedelta(days=7)
+            })
+            
+        return payload
