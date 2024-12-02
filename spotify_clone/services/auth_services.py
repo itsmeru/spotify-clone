@@ -1,22 +1,22 @@
-from passlib.context import CryptContext
-
-from spotify_clone.auth.events import AuthSubject
+from spotify_clone.auth.events import AuthSubject, AuthEvent
 from spotify_clone.services.db import execute_query
+from spotify_clone.utils import Utils
+from spotify_clone.settings import ERROR_MESSAGES
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class AuthServices(AuthSubject):
     def __init__(self):
-        self.pwd_context = pwd_context
-
+        super().__init__() 
+        self.utils = Utils()
+    
     async def sign_up(self, user_data: dict):
         existing_user = execute_query("SELECT id FROM users WHERE email = %s",(user_data["email"], ))
         if existing_user:
-            return  {"error": "Email already registered"}
+            return self.utils.create_error_response(400, ERROR_MESSAGES["EMAIL_EXISTS"], AuthEvent.SIGN_UP_FAILED)
 
         email = user_data["email"]
         username = user_data["username"]
-        hashed_password = self.hash_password(user_data["password"])
+        hashed_password = self.utils.hash_password(user_data["password"])
 
         query = """
         INSERT INTO users (email, username, hashed_password)
@@ -25,7 +25,12 @@ class AuthServices(AuthSubject):
         """
     
         result = execute_query(query, (email, username, hashed_password))
-        return result[0] if result else None
+        if result:
+            user_info = result[0]
+            self.notify(AuthEvent.SIGN_UP_SUCCESS, user_info) 
+            return user_info
+        
+        return self.utils.create_error_response(500, ERROR_MESSAGES["CREATE_FAILED"], AuthEvent.SIGN_UP_FAILED)
 
     async def sign_in(self,user_data: dict):
         email = user_data["email"]
@@ -35,20 +40,18 @@ class AuthServices(AuthSubject):
         result = execute_query(query, (email,))
 
         if not result:
-            return {"error": "User not found"}
+            return self.utils.create_error_response(404, ERROR_MESSAGES["USER_NOT_FOUND"], AuthEvent.SIGN_IN_FAILED)
+        
         
         user = result[0]
         hashed_pwd = user["hashed_password"]
 
-        if self.verify_password(input_pwd, hashed_pwd):
+        if self.utils.verify_password(input_pwd, hashed_pwd):
             del user["hashed_password"]
+            self.notify(AuthEvent.SIGN_IN_SUCCESS, user) 
             return user
         
-        return {"error": "Invalid password"}
+        return self.utils.create_error_response(400, ERROR_MESSAGES["INVALID_PASSWORD"], AuthEvent.SIGN_IN_FAILED)
 
-    def hash_password(self, pwd):
-        return self.pwd_context.hash(pwd)
     
-    def verify_password(self, input_pwd, hash_pwd):
-        return self.pwd_context.verify(input_pwd, hash_pwd)
 

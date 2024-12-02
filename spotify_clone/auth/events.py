@@ -28,3 +28,7 @@ class AuthSubject:
         for observer in self._observers:
             observer.update(event, data)
     
+    def detach(self, observer: Observer):
+        if observer in self._observers:
+            self._observers.remove(observer)
+    

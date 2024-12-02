@@ -22,8 +22,8 @@ def get_db_connection():
     try:
         return psycopg2.connect(
             host="localhost",
-            database="spotify_db",
-            user="spotify_user",
+            database=os.getenv("POSTGRES_DB"),
+            user=os.getenv("POSTGRES_USER"),
             password=os.getenv("POSTGRES_PASSWORD"),
             cursor_factory=RealDictCursor
         )
