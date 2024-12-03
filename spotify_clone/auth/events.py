@@ -2,25 +2,25 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import NamedTuple
 
-class ErrorInfo(NamedTuple):
-    status_code: int
-    error_code: str
+class StatusInfo(NamedTuple):
+    http_status_code: int
+    status_code: str
     message: str
 
 class AuthEvent(Enum):
-    SIGN_IN_SUCCESS = "sign_in_success"
-    SIGN_IN_FAILED = "sign_in_failed"
-    SIGN_UP_SUCCESS = "sign_up_success"
-    SIGN_UP_FAILED = "sign_up_failed"
-    TOKEN_REFRESH_FAILED = "token_refresh_failed"
+    EMAIL_EXISTS = StatusInfo(400, "1002", "Email already exists")
+    USER_NOT_FOUND = StatusInfo(404, "9999", "User not found")
+    INVALID_PASSWORD = StatusInfo(400, "9999", "Invalid password")
+    CREATE_FAILED = StatusInfo(500, "9999", "Failed to create user")
+    TOKEN_EXPIRED = StatusInfo(401, "9999", "Token has expired")
+    INVALID_TOKEN = StatusInfo(401, "9999", "Invalid token")
+    TOKEN_REFRESH_FAILED = StatusInfo(400, "9999", "Token refresh failed")
+    SIGN_IN_SUCCESS = StatusInfo(200, "0000", "Sign in success")
+    SIGN_UP_SUCCESS = StatusInfo(200, "0000", "Sign up success")
+    TOKEN_REFRESH_SUCCESS = StatusInfo(200, "0000", "Token_refresh_success")
+    GITHUB_AUTH_FAILED = StatusInfo(401, "9999", "Github auth failed")
+    GITHUB_AUTH_SUCCESS = StatusInfo(200, "0000", "Github auth success")
 
-class AuthError(Enum):
-    EMAIL_EXISTS = ErrorInfo(400, "1002", "Email already exists")
-    USER_NOT_FOUND = ErrorInfo(404, "9999", "User not found")
-    INVALID_PASSWORD = ErrorInfo(400, "9999", "Invalid password")
-    CREATE_FAILED = ErrorInfo(500, "9999", "Failed to create user")
-    TOKEN_EXPIRED = ErrorInfo(401, "9999", "Token has expired")
-    INVALID_TOKEN = ErrorInfo(401, "9999", "Invalid token")
 
 class Observer(ABC):
     @abstractmethod

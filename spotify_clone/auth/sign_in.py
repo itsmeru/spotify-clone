@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Cookie, Depends, Response
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 from spotify_clone.dependencies import get_auth_service
 from spotify_clone.services.auth_services import AuthServices
@@ -7,7 +7,7 @@ from spotify_clone.services.auth_services import AuthServices
 router = APIRouter()
 
 class SignInRequest(BaseModel):
-    email: str
+    email: EmailStr
     password: str
 
 @router.post("/signin")

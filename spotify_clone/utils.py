@@ -1,13 +1,14 @@
+from fastapi import Response
 from datetime import datetime, timedelta
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 import jwt
 
 from spotify_clone.settings import  ALGO, JWT_SECRET
-from spotify_clone.auth.events import AuthEvent, AuthSubject, AuthError
+from spotify_clone.auth.events import AuthSubject
 
 
-class Utils(AuthSubject):
+class Utils():
     def __init__(self):
         self.ph = PasswordHasher()
 
@@ -42,3 +43,23 @@ class Utils(AuthSubject):
             })
             
         return payload
+    
+    def setting_access_token(self, user: dict, response: Response):
+        access_token = self.jwt_encode(self.create_token_payload(user, "access"))
+        self.cookie_setting("access_token", access_token, 900, response)
+    
+    def setting_refresh_token(self, user: dict, response: Response):
+        refresh_token = self.jwt_encode(self.create_token_payload(user, "refresh"))
+        self.cookie_setting("refresh_token", refresh_token, 604800, response)
+    
+    def cookie_setting(self, key: str, value: str, max_age: int, response: Response):
+        response.set_cookie(
+                key=key,
+                value=value,
+                httponly=True,
+                # secure=True,  
+                samesite="lax",
+                max_age=max_age,
+            )
+
+
