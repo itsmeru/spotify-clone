@@ -5,7 +5,6 @@ from argon2.exceptions import VerifyMismatchError
 import jwt
 
 from spotify_clone.settings import  ALGO, JWT_SECRET
-from spotify_clone.auth.events import AuthSubject
 
 
 class Utils():
@@ -24,7 +23,7 @@ class Utils():
     def jwt_encode(self, payload):
         return jwt.encode(payload, JWT_SECRET, algorithm=ALGO)
     
-    def create_token_payload(self, user: dict, token_type: str) -> dict:
+    def create_token_payload(self, user: dict, token_type: str):
         payload = {
             "id": user["id"],
             "type": token_type,
@@ -44,15 +43,13 @@ class Utils():
             
         return payload
     
-    def setting_access_token(self, user: dict, response: Response):
-        access_token = self.jwt_encode(self.create_token_payload(user, "access"))
-        self.cookie_setting("access_token", access_token, 900, response)
+    def get_access_token(self, user: dict):
+        return self.jwt_encode(self.create_token_payload(user, "access"))
     
-    def setting_refresh_token(self, user: dict, response: Response):
-        refresh_token = self.jwt_encode(self.create_token_payload(user, "refresh"))
-        self.cookie_setting("refresh_token", refresh_token, 604800, response)
+    def get_refresh_token(self, user: dict):
+        return self.jwt_encode(self.create_token_payload(user, "refresh"))
     
-    def cookie_setting(self, key: str, value: str, max_age: int, response: Response):
+    def set_cookie(self, key: str, value: str, max_age: int, response: Response):
         response.set_cookie(
                 key=key,
                 value=value,

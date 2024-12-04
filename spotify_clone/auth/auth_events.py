@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 from enum import Enum
 from typing import NamedTuple
 
@@ -20,30 +19,3 @@ class AuthEvent(Enum):
     TOKEN_REFRESH_SUCCESS = StatusInfo(200, "0000", "Token_refresh_success")
     GITHUB_AUTH_FAILED = StatusInfo(401, "9999", "Github auth failed")
     GITHUB_AUTH_SUCCESS = StatusInfo(200, "0000", "Github auth success")
-
-
-class Observer(ABC):
-    @abstractmethod
-    def update(self, event:AuthEvent, data: dict):
-        pass
-
-class LoggingObserver(Observer):
-    def update(self, event: AuthEvent, data: dict):
-        print(f"Auth event: {event.value}, Data: {data}")
-
-class AuthSubject:
-    def __init__(self):
-        self._observers = []
-
-    def attach(self, observer: Observer):
-        if observer not in self._observers:
-            self._observers.append(observer)
-
-    def notify(self, event: AuthEvent, data: dict):
-        for observer in self._observers:
-            observer.update(event, data)
-    
-    def detach(self, observer: Observer):
-        if observer in self._observers:
-            self._observers.remove(observer)
-    

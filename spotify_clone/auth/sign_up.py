@@ -4,7 +4,7 @@ import re
 from spotify_clone.dependencies import get_auth_service
 from spotify_clone.services.auth_services import AuthServices
 
-router = APIRouter()
+router = APIRouter(tags=["User"])
 
 class SignUpRequest(BaseModel):
     username: str = Field(..., min_length=1, max_length=128, description="Name cannot be empty")
@@ -23,6 +23,6 @@ class SignUpRequest(BaseModel):
            raise ValueError('Password must contain at least one special character')
        return v
     
-@router.post("/signup")
+@router.post("/users", summary="User Registration", )
 async def sign_up(request: SignUpRequest, auth_service: AuthServices = Depends(get_auth_service)):
     return await auth_service.sign_up(request.dict())

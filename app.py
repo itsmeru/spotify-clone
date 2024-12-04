@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 
-from spotify_clone.auth import sign_in, sign_up, github
+from spotify_clone.auth import sign_in, sign_up, sign_out, github
 from spotify_clone.services.db import init_db
 
 app = FastAPI()
@@ -23,7 +23,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         }
     )
 
+app.include_router(sign_up.router, prefix="/api/v1")
 app.include_router(sign_in.router, prefix="/api/v1/auth")
-app.include_router(sign_up.router, prefix="/api/v1/auth")
+app.include_router(sign_out.router, prefix="/api/v1/auth")
 app.include_router(github.router, prefix="/api/v1/auth")
 
