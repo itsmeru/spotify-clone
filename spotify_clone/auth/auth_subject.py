@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 
 from .auth_events import AuthEvent
 from .auth_observers import LoggingObserver, Observer
-from spotify_clone.utils import Utils
+from spotify_clone.auth_utils import Utils
 from spotify_clone.services.db_users import DBUsers
 
 

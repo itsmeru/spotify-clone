@@ -23,7 +23,7 @@ class AuthServices(AuthSubject):
         user = self.db_users.get_user_by_email(user_data["email"])
         if not user:
             self.clear_auth_cookies(response)
-            return self.create_response(AuthEvent.USER_NOT_FOUND, response)
+            return self.create_response(AuthEvent.USER_NOT_FOUND)
                     
         if self.utils.verify_password(user_data["password"], user["hashed_password"]):
             del user["hashed_password"]
@@ -38,7 +38,12 @@ class AuthServices(AuthSubject):
             return self.create_response(AuthEvent.SIGN_IN_SUCCESS, response, data)
         
         self.clear_auth_cookies(response)
-        return self.create_response(AuthEvent.INVALID_PASSWORD, response)
+        return self.create_response(AuthEvent.INVALID_PASSWORD)
+    
+    async def sign_out(self, response: Response):
+        self.clear_auth_cookies(response)
+        return self.create_response(AuthEvent.SIGN_OUT_SUCCESS)
+
             
     
     

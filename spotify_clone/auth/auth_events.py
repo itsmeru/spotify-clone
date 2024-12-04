@@ -16,6 +16,8 @@ class AuthEvent(Enum):
     TOKEN_REFRESH_FAILED = StatusInfo(400, "9999", "Token refresh failed")
     SIGN_IN_SUCCESS = StatusInfo(200, "0000", "Sign in success")
     SIGN_UP_SUCCESS = StatusInfo(200, "0000", "Sign up success")
+    SIGN_OUT_SUCCESS = StatusInfo(200, "0000", "Sign out success")
     TOKEN_REFRESH_SUCCESS = StatusInfo(200, "0000", "Token_refresh_success")
     GITHUB_AUTH_FAILED = StatusInfo(401, "9999", "Github auth failed")
     GITHUB_AUTH_SUCCESS = StatusInfo(200, "0000", "Github auth success")
+

@@ -1,6 +1,7 @@
 from spotify_clone.services.auth_services import AuthServices
 from spotify_clone.services.oauth_services import OAuthServices
 from spotify_clone.services.token_services import TokenService
+from spotify_clone.services.password_services import PasswordeSrvices
 
 def get_service_instance(service_class):
     def get_instance():
@@ -12,6 +13,8 @@ def get_service_instance(service_class):
 get_auth_service = get_service_instance(AuthServices)
 get_oauth_service = get_service_instance(OAuthServices)
 get_token_service = get_service_instance(TokenService)
+get_password_service = get_service_instance(PasswordeSrvices)
+
 
 
 
