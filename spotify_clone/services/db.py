@@ -1,32 +1,42 @@
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from psycopg2.pool import SimpleConnectionPool
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
+connection_pool = SimpleConnectionPool(
+    minconn=1,
+    maxconn=10,
+    host="localhost",
+    database=os.getenv("POSTGRES_DB"),
+    user=os.getenv("POSTGRES_USER"),
+    password=os.getenv("POSTGRES_PASSWORD"),
+    cursor_factory=RealDictCursor
+)
 def init_db():
-    query = """
+    create_extension_query = """
+        CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    """
+
+    create_table_query = """
         CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
+            id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
             email VARCHAR(255) UNIQUE NOT NULL,
             username VARCHAR(100) NOT NULL,
             hashed_password VARCHAR(255) NOT NULL,
             is_active BOOLEAN DEFAULT TRUE,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-        """
-    execute_query(query)
+    """
+    
+    execute_query(create_extension_query)
+    execute_query(create_table_query)
 
 def get_db_connection():
     try:
-        return psycopg2.connect(
-            host="localhost",
-            database=os.getenv("POSTGRES_DB"),
-            user=os.getenv("POSTGRES_USER"),
-            password=os.getenv("POSTGRES_PASSWORD"),
-            cursor_factory=RealDictCursor
-        )
+        return connection_pool.getconn()
     except psycopg2.Error as e:
         print(f"Unable to connect to the database: {e}")
         raise
@@ -44,4 +54,9 @@ def execute_query(query, params=None):
                     return None
     except psycopg2.Error as e:
         print("connecting DB error", e)
+
+def close_pool():
+    if connection_pool:
+        connection_pool.closeall()
+   
     

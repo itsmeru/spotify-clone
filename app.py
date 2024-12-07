@@ -3,13 +3,17 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 
 from spotify_clone.auth import sign_in, sign_up, sign_out, github, refresh_token, forgot_password
-from spotify_clone.services.db import init_db
+from spotify_clone.services.db import init_db, close_pool
 
 app = FastAPI()
 
 @app.on_event("startup")
 async def startup_event():
     init_db()
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    close_pool()
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
