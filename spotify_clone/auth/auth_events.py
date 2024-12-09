@@ -20,4 +20,10 @@ class AuthEvent(Enum):
     TOKEN_REFRESH_SUCCESS = StatusInfo(200, "0000", "Token_refresh_success")
     GITHUB_AUTH_FAILED = StatusInfo(401, "9999", "Github auth failed")
     GITHUB_AUTH_SUCCESS = StatusInfo(200, "0000", "Github auth success")
+    EMAIL_SENT = StatusInfo(200, "0000", "email sent success")
+    EMAIL_SEND_FAILED = StatusInfo(400, "9999", "email send failed")
+    VERIFICATION_CODE_EXPIRED =  StatusInfo(401, "9999", "verification code has expired")
+    INVALID_VERIFICATION_CODE = StatusInfo(400, "9999", "invalid verification code")
+    VERIFICATION_CODE_SUCCESS = StatusInfo(200, "0000", "verify success")
+
 

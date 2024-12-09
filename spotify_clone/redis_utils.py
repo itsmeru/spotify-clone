@@ -11,6 +11,7 @@ class RedisUtils:
     def get_verification_code(self, user_id: str):
         key = f"reset_pwd_{user_id}"
         value = self.redis.get(key)
+        print("OKOK value", user_id)
         return value.decode() if value else None
         
     def delete_verification_code(self, user_id: str):
