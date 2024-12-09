@@ -25,5 +25,8 @@ class AuthEvent(Enum):
     VERIFICATION_CODE_EXPIRED =  StatusInfo(401, "9999", "verification code has expired")
     INVALID_VERIFICATION_CODE = StatusInfo(400, "9999", "invalid verification code")
     VERIFICATION_CODE_SUCCESS = StatusInfo(200, "0000", "verify success")
+    UPDATE_PASSWORD_FAILED = StatusInfo(400, "9999", "update password failed")
+    UPDATE_PASSWORD_SUCCESS =  StatusInfo(200, "0000", "update password success")
+
 
 

@@ -15,7 +15,7 @@ class SignInRequest(BaseModel):
     password: str
 
 class SignOutRequest(BaseModel):
-    user_id: int
+    user_id: str
 
 class SignUpRequest(BaseModel):
     username: str = Field(..., min_length=1, max_length=128, description="Name cannot be empty")
@@ -44,8 +44,8 @@ async def sign_up(request: SignUpRequest, auth_service: AuthServices = Depends(g
     return await auth_service.sign_up(request.dict())
 
 @router.delete("/signout", summary="User Sign Out")
-async def sign_out(request: SignOutRequest, response: Response, auth_service:  AuthServices = Depends(get_auth_service)):
-    return await auth_service.sign_out(request.user_id, response)
+async def sign_out(request: SignOutRequest, auth_service:  AuthServices = Depends(get_auth_service)):
+    return await auth_service.sign_out(request.user_id)
 
 @router.put("/refresh-token", summary="Get Access Token")
 async def refresh_token(response: Response, refresh_token:Optional[str] =  Cookie(None, alias="refreshToken"), token_service: TokenService = Depends(get_token_service)):

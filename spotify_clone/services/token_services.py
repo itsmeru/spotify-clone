@@ -27,6 +27,7 @@ class TokenService(AuthSubject):
             user_data = self.db_utils.get_user_by_id(user_id)
             if not user_data:
                 return self.create_response(AuthEvent.TOKEN_REFRESH_FAILED)
+            
             access_token = self.auth_utils.get_access_token(user_data)
             new_refresh_token = self.auth_utils.get_refresh_token(user_data)
 
@@ -38,11 +39,11 @@ class TokenService(AuthSubject):
                 json.dumps(token_data),
             )
 
-            self.auth_utils.set_cookie("refreshToken", new_refresh_token, 60400, response)
+            self.auth_utils.set_cookies("refreshToken", new_refresh_token, 60400, response)
             
             return self.create_response(AuthEvent.TOKEN_REFRESH_SUCCESS,data = {"access_token": access_token} )
 
         except jwt.ExpiredSignatureError:
             return self.create_response(AuthEvent.TOKEN_EXPIRED)
-        except jwt.DecodeError as e:
+        except jwt.DecodeError :
             return self.create_response(AuthEvent.TOKEN_REFRESH_FAILED)

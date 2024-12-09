@@ -1,3 +1,4 @@
+import json
 import httpx
 from fastapi import Response
 
@@ -60,20 +61,38 @@ class OAuthServices(AuthSubject):
                     primary_email = email['email']
             
             if not primary_email:
-                return self.auth_service.create_response(AuthEvent.GITHUB_AUTH_FAILED, response)
+                return self.create_response(AuthEvent.GITHUB_AUTH_FAILED)
             
             # 4. create users
-            user = self.db_utils.get_user_by_provider_id('github', str(github_user['id']))
-            if not user:
+            oauth_user = self.db_utils.get_user_by_provider_id('github', str(github_user['id']))
+            auth_user = self.db_utils.get_user_by_email(primary_email)
+
+            if oauth_user:  
+                user = oauth_user
+            else:
+                if auth_user:
+                    return self.create_response(AuthEvent.EMAIL_EXISTS)
+
                 user = self.db_utils.insert_data_to_users(email=primary_email,
                     username=github_user['login'],
                     provider='github',
                     provider_id=str(github_user['id']))
                 
-            access_token = self.auth_utils.get_access_token(user)
             refresh_token = self.auth_utils.get_refresh_token(user)
+            access_token = self.auth_utils.get_access_token(user)
+            
+            token_data = {
+                "token": refresh_token,
+            }
 
-            return self.auth_service.create_response(AuthEvent.GITHUB_AUTH_SUCCESS, response)
+            self.redis_utils.set_verification_code(
+                user['id'], 
+                json.dumps(token_data),
+            )
+
+            self.auth_utils.set_cookies("refreshToken", refresh_token, 60400, response)
+
+            return self.create_response(AuthEvent.GITHUB_AUTH_SUCCESS, data = {"access_token": access_token, "user_id": user['id']})
             
 
             

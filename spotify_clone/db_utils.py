@@ -25,3 +25,14 @@ class DBUtils:
         """
         result = execute_query(query, (email, username, hashed_password, provider, provider_id))
         return result[0] if result else None
+    @staticmethod
+    def update_user_password(email: str, hashed_password: str):
+        query = """
+        UPDATE users 
+        SET hashed_password = %s, 
+            updated_at = CURRENT_TIMESTAMP 
+        WHERE email = %s 
+        RETURNING id, email, username
+        """
+        result = execute_query(query, (hashed_password, email))
+        return result[0] if result else None

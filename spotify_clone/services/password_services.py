@@ -1,8 +1,12 @@
 import smtplib
 import random
 import os
+import jwt
 from dotenv import load_dotenv
 from email.mime.text import MIMEText
+
+from spotify_clone.settings import  ALGO, JWT_SECRET
+
 
 load_dotenv()
 
@@ -56,3 +60,31 @@ class PasswordeSrvices(AuthSubject):
         self.redis_utils.delete_verification_code(email)
 
         return self.create_response(AuthEvent.VERIFICATION_CODE_SUCCESS)
+    
+    def change_password(self, token, password):
+        try:
+            payload = jwt.decode(token, JWT_SECRET, algorithms=[ALGO])
+            user_id = payload.get("id")
+            user_email = payload.get("email")
+
+            user = self.db_utils.get_user_by_id(user_id)
+            if not user:
+                return self.create_response(AuthEvent.USER_NOT_FOUND)
+            
+            if user["email"] != user_email:
+                return self.create_response(AuthEvent.INVALID_TOKEN)
+            
+            hash_pwd = self.auth_utils.hash_password(password)
+            update_result = self.db_utils.update_user_password(user_email, hash_pwd)
+
+            if not update_result:
+                return self.create_response(AuthEvent.UPDATE_PASSWORD_FAILED)
+            
+            self.redis_utils.delete_verification_code(user_id)
+            
+            return self.create_response(AuthEvent.UPDATE_PASSWORD_SUCCESS)
+
+        except jwt.ExpiredSignatureError:
+            return self.create_response(AuthEvent.TOKEN_EXPIRED)
+        except jwt.DecodeError :
+            return self.create_response(AuthEvent.TOKEN_REFRESH_FAILED)

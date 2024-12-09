@@ -28,6 +28,7 @@ class AuthServices(AuthSubject):
             del user["hashed_password"]
 
             refresh_token = self.auth_utils.get_refresh_token(user)
+            access_token = self.auth_utils.get_access_token(user)
 
             token_data = {
                 "token": refresh_token,
@@ -37,9 +38,9 @@ class AuthServices(AuthSubject):
                 user['id'], 
                 json.dumps(token_data),
             )
-            self.auth_utils.set_cookie("refreshToken", refresh_token, 60400, response)
+            self.auth_utils.set_cookies("refreshToken", refresh_token, 60400, response)
             
-            return self.create_response(AuthEvent.SIGN_IN_SUCCESS, response)
+            return self.create_response(AuthEvent.SIGN_IN_SUCCESS,  data = {"access_token": access_token, "user_id": user['id']})
         
         return self.create_response(AuthEvent.INVALID_PASSWORD)
     

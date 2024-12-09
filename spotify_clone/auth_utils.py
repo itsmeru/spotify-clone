@@ -49,7 +49,7 @@ class AuthUtils():
     def get_refresh_token(self, user: dict):
         return self.jwt_encode(self.create_token_payload(user, "refresh"))
     
-    def set_cookie(self, key: str, value: str, max_age: int, response: Response):
+    def set_cookies(self, key: str, value: str, max_age: int, response: Response):
         response.set_cookie(
                 key=key,
                 value=value,
@@ -58,5 +58,4 @@ class AuthUtils():
                 samesite="lax",
                 max_age=max_age,
             )
-
-
+    
