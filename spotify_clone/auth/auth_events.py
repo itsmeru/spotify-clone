@@ -13,7 +13,7 @@ class AuthEvent(Enum):
     CREATE_FAILED = StatusInfo(500, "9999", "Failed to create user")
     TOKEN_EXPIRED = StatusInfo(401, "9999", "Token has expired")
     INVALID_TOKEN = StatusInfo(401, "9999", "Invalid token")
-    TOKEN_REFRESH_FAILED = StatusInfo(400, "9999", "Token refresh failed")
+    TOKEN_REFRESH_FAILED = StatusInfo(401, "9999", "Token refresh failed")
     SIGN_IN_SUCCESS = StatusInfo(200, "0000", "Sign in success")
     SIGN_UP_SUCCESS = StatusInfo(200, "0000", "Sign up success")
     SIGN_OUT_SUCCESS = StatusInfo(200, "0000", "Sign out success")

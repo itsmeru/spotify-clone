@@ -3,14 +3,15 @@ from fastapi.responses import JSONResponse
 
 from .auth_events import AuthEvent
 from .auth_observers import LoggingObserver, Observer
-from spotify_clone.auth_utils import Utils
-from spotify_clone.services.db_users import DBUsers
-
+from spotify_clone.auth_utils import AuthUtils
+from spotify_clone.db_utils import  DBUtils
+from spotify_clone.redis_utils import RedisUtils
 
 class AuthSubject:
     def __init__(self):
-        self.db_users = DBUsers()
-        self.utils = Utils()
+        self.db_utils =  DBUtils()
+        self.auth_utils = AuthUtils()
+        self.redis_utils = RedisUtils()
         self._observers = []
         self.attach(LoggingObserver())
 
@@ -27,7 +28,11 @@ class AuthSubject:
             self._observers.remove(observer)
 
     def create_response(self, event: AuthEvent, response: Response = None, data=None,):
-            content = {"status_code": event.value.status_code, "status_msg": event.value.message, **({"data": data if data else [] })}
+            content = {
+                "status_code": event.value.status_code,
+                "status_msg": event.value.message,
+                "data": data if data is not None else []
+            }
             self.notify(event, data)
             if response:
                 response.status_code = event.value.http_status_code
@@ -37,9 +42,5 @@ class AuthSubject:
                 status_code=event.value.http_status_code, 
                 content=content
             )
-    
-    def clear_auth_cookies(self, response: Response):
-        for key in ["access_token","refresh_token" ]:
-            response.delete_cookie(key=key)
     
     

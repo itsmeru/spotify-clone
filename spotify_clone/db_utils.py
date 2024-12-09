@@ -1,6 +1,6 @@
 from spotify_clone.services.db import execute_query
 
-class DBUsers:
+class DBUtils:
     @staticmethod
     def get_user_by_email(email):
         query = "SELECT * FROM users WHERE email = %s"

@@ -1,3 +1,4 @@
+import json
 from fastapi import Response
 import jwt
 
@@ -9,28 +10,39 @@ class TokenService(AuthSubject):
     def __init__(self):
         super().__init__()
 
-    async def refresh_token(self, refresh_token: str, response: Response):    
+    async def get_token(self, response:Response, refresh_token: str):   
         try:
             payload = jwt.decode(refresh_token, JWT_SECRET, algorithms=[ALGO])
-            if payload["type"] != "refresh":
-                self.clear_auth_cookies(response)
-                return self.create_response(AuthEvent.INVALID_TOKEN, response)
-       
-            user = self.db_users.get_user_by_id(payload["id"])
-            if not user:
-                return self.create_response(AuthEvent.INVALID_TOKEN, response)
+            user_id = payload.get("id")
 
-            access_token = self.utils.get_access_token(user)
-            refresh_token = self.utils.get_refresh_token(user)
-
-            self.utils.set_cookie("access_token", access_token, 900, response)
-            self.utils.set_cookie("refresh_token", refresh_token, 604800, response)
+            stored_data = self.redis_utils.get_verification_code(user_id)
+            if not stored_data:
+                return self.create_response(AuthEvent.TOKEN_REFRESH_FAILED)
             
-            return self.create_response(AuthEvent.TOKEN_REFRESH_SUCCESS, response)
+            stored_token = json.loads(stored_data).get("token")
+        
+            if stored_token != refresh_token:
+                return self.create_response(AuthEvent.TOKEN_REFRESH_FAILED)
+            
+            user_data = self.db_utils.get_user_by_id(user_id)
+            if not user_data:
+                return self.create_response(AuthEvent.TOKEN_REFRESH_FAILED)
+            access_token = self.auth_utils.get_access_token(user_data)
+            new_refresh_token = self.auth_utils.get_refresh_token(user_data)
+
+            token_data = {
+                "token": new_refresh_token,
+            }
+            self.redis_utils.set_verification_code(
+                user_id, 
+                json.dumps(token_data),
+            )
+
+            self.auth_utils.set_cookie("refreshToken", new_refresh_token, 60400, response)
+            
+            return self.create_response(AuthEvent.TOKEN_REFRESH_SUCCESS,data = {"access_token": access_token} )
 
         except jwt.ExpiredSignatureError:
-            self.clear_auth_cookies(response)
-            return self.create_response(AuthEvent.TOKEN_EXPIRED, response)
-        except jwt.DecodeError:
-            self.clear_auth_cookies(response)
-            return self.create_response(AuthEvent.TOKEN_REFRESH_FAILED, response)
+            return self.create_response(AuthEvent.TOKEN_EXPIRED)
+        except jwt.DecodeError as e:
+            return self.create_response(AuthEvent.TOKEN_REFRESH_FAILED)

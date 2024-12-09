@@ -9,7 +9,7 @@ load_dotenv()
 connection_pool = SimpleConnectionPool(
     minconn=1,
     maxconn=10,
-    host="localhost",
+    host="postgres",
     database=os.getenv("POSTGRES_DB"),
     user=os.getenv("POSTGRES_USER"),
     password=os.getenv("POSTGRES_PASSWORD"),
@@ -25,9 +25,12 @@ def init_db():
             id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
             email VARCHAR(255) UNIQUE NOT NULL,
             username VARCHAR(100) NOT NULL,
-            hashed_password VARCHAR(255) NOT NULL,
+            hashed_password VARCHAR(255),  
+            provider VARCHAR(50),          
+            provider_id VARCHAR(255),    
             is_active BOOLEAN DEFAULT TRUE,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(provider, provider_id) 
         );
     """
     

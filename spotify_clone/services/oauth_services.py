@@ -63,15 +63,15 @@ class OAuthServices(AuthSubject):
                 return self.auth_service.create_response(AuthEvent.GITHUB_AUTH_FAILED, response)
             
             # 4. create users
-            user = self.db_users.get_user_by_provider_id('github', str(github_user['id']))
+            user = self.db_utils.get_user_by_provider_id('github', str(github_user['id']))
             if not user:
-                user = self.db_users.insert_data_to_users(email=primary_email,
+                user = self.db_utils.insert_data_to_users(email=primary_email,
                     username=github_user['login'],
                     provider='github',
                     provider_id=str(github_user['id']))
                 
-            self.utils.setting_access_token(user, response)
-            self.utils.setting_refresh_token(user, response)
+            access_token = self.auth_utils.get_access_token(user)
+            refresh_token = self.auth_utils.get_refresh_token(user)
 
             return self.auth_service.create_response(AuthEvent.GITHUB_AUTH_SUCCESS, response)
             

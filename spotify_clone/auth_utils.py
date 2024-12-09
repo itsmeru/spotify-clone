@@ -7,7 +7,7 @@ import jwt
 from spotify_clone.settings import  ALGO, JWT_SECRET
 
 
-class Utils():
+class AuthUtils():
     def __init__(self):
         self.ph = PasswordHasher()
 

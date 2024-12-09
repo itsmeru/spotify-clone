@@ -11,7 +11,7 @@ class PasswordeSrvices(AuthSubject):
         self.redis_utils = RedisUtils()
     
     async def forgot_password(self, email: str):
-        user = self.db_users.get_user_by_email(email)
+        user = self.db_utils.get_user_by_email(email)
         if not user:
             return self.create_response(AuthEvent.USER_NOT_FOUND)
         
